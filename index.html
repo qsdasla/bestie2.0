@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dear Bestie — Little love notes from your inner best friend</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --g1:#FFEAF3; --g2:#E8F4FF; --g3:#F7F3FF; /* initial calm palette */
+    --accent:#6B46C1; --muted:#6b7280;
+    --card:rgba(255,255,255,.88); --radius:16px; --maxw:1000px;
+  }
+  body{
+    margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    font-family:"Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: linear-gradient(135deg,var(--g1),var(--g2),var(--g3));
+    background-size: 400% 400%; animation: bgShift 20s ease infinite; color:#111827;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  }
+  @keyframes bgShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  .app{ width:min(94%,var(--maxw)); display:grid; grid-template-columns:1fr 360px; gap:28px; align-items:start; padding:36px; }
+  @media (max-width:980px){ .app{grid-template-columns:1fr; padding:22px; gap:18px;} .sidebar{order:2;} }
+
+  /* Header */
+  header.brand{ grid-column:1 / -1; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+  .brandL{ display:flex; align-items:center; gap:12px; }
+  .logo{ width:60px; height:60px; border-radius:14px; background:linear-gradient(135deg,rgba(255,255,255,.3),rgba(255,255,255,.06));
+    display:flex; align-items:center; justify-content:center; box-shadow:0 6px 20px rgba(11,14,19,.08); border:1px solid rgba(255,255,255,.25); }
+  .logo .heart{ font-size:26px; color:var(--accent); transform:translateY(-1px); }
+  .brandText h1{ margin:0; font-size:22px; letter-spacing:-.02em; font-weight:700; }
+  .brandText p{ margin:2px 0 0; color:var(--muted); font-size:13px; }
+
+  /* Animal picker row */
+  .animalPicker{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; background:var(--card); padding:8px; border-radius:12px;
+    box-shadow:0 6px 16px rgba(11,14,19,.06); }
+  .animalBtn{ border:none; background:transparent; cursor:pointer; width:36px; height:36px; border-radius:10px; font-size:20px; line-height:36px;
+    transition:transform .15s ease, background .15s ease; }
+  .animalBtn:hover{ transform:translateY(-2px); }
+  .animalBtn.active{ background:rgba(17,24,39,.06); box-shadow:inset 0 0 0 2px rgba(17,24,39,.08); }
+
+  /* Card */
+  .cardWrap{ background: linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.72)); border-radius: var(--radius);
+    padding:28px; box-shadow:0 10px 30px rgba(11,14,19,.08); backdrop-filter: blur(6px); position:relative; }
+  .controls{ display:flex; gap:10px; align-items:center; margin-bottom:18px; flex-wrap:wrap; }
+  .btn{ background:transparent; border:1px solid rgba(17,24,39,.06); padding:8px 12px; border-radius:12px; cursor:pointer; font-weight:600; font-size:14px;
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
+  .btn:hover{ transform:translateY(-3px); box-shadow: 0 6px 18px rgba(11,14,19,.06); }
+  .btn.primary{ background:linear-gradient(90deg,var(--accent), #9F7AEA); color:#fff; border:none; }
+  .affirmationCard{ min-height:220px; display:flex; gap:18px; align-items:center; justify-content:space-between; }
+  .affirmation{ flex:1; font-size:22px; line-height:1.35; font-weight:600; color:#111827; }
+  .meta{ color:var(--muted); font-size:13px; margin-top:8px; font-weight:500; }
+
+  /* Animal */
+  .animal{ width:140px; height:140px; display:flex; align-items:center; justify-content:center; transform-origin:center;
+    transition: transform .42s cubic-bezier(.2,.9,.3,1); }
+  .svgWrap{ animation: floaty 4s ease-in-out infinite; }
+  @keyframes floaty{ 0%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-6px) rotate(1deg)} 100%{transform:translateY(0) rotate(-1deg)} }
+  .affirmationCard.revealed .animal{ transform: scale(1.06) rotate(-3deg); }
+  .affirmationCard.revealed .svgTail{ animation: tailWag .35s linear infinite; transform-origin:center; }
+  @keyframes tailWag{ 0%{transform:rotate(0)} 50%{transform:rotate(12deg)} 100%{transform:rotate(0)} }
+
+  /* Sidebar */
+  .sidebar{ background: var(--card); padding:18px; border-radius:14px; box-shadow: 0 6px 20px rgba(11,14,19,.06); height:fit-content; }
+  .sidebar h3{ margin:0 0 12px; font-size:15px; }
+  .historyGrid{ display:grid; gap:10px; grid-template-columns:repeat(2, 1fr); }
+  @media (max-width:520px){ .historyGrid{ grid-template-columns:1fr; } }
+  .hBlock{ background:rgba(17,24,39,.035); border:1px solid rgba(17,24,39,.06); padding:10px 12px; border-radius:12px; cursor:pointer;
+    display:grid; grid-template-columns:auto 1fr; gap:8px; align-items:center; transition:transform .12s ease, box-shadow .12s ease; }
+  .hBlock:hover{ transform:translateY(-2px); box-shadow:0 6px 14px rgba(11,14,19,.06); }
+  .hIcon{ font-size:18px; } .hText{ font-size:13px; color:#374151; line-height:1.25; } .hDate{ font-size:11px; color:#6b7280; margin-top:4px; }
+  .confetti{ pointer-events:none; position:absolute; inset:0; overflow:visible; }
+  footer.note{ margin-top:12px; color:#6b7280; font-size:13px; }
+
+  /* Activity panel */
+  .activityBar{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .activityCard{ margin-top:12px; background:rgba(255,255,255,.95); border:1px solid rgba(17,24,39,.06); border-radius:14px; padding:14px; display:none; }
+  .activityCard.active{ display:block; }
+  .activityTitle{ font-weight:700; font-size:14px; margin:0 0 8px; }
+  .activityHelp{ color:#6b7280; font-size:12px; margin-bottom:8px; }
+
+  /* Buddy Breaths visuals */
+  .breathCircleWrap{ display:flex; align-items:center; gap:12px; }
+  .breathCircle{ width:56px; height:56px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #ffffff, #f3f0ff);
+    box-shadow: inset 0 0 0 2px rgba(108,99,255,.12), 0 8px 16px rgba(17,24,39,.06); transform:scale(1); transition: transform 1.6s ease; }
+  .breathText{ font-size:14px; font-weight:600; }
+  .breathSub{ font-size:12px; color:#6b7280; }
+  .breathProgress{ height:6px; background:rgba(17,24,39,.06); border-radius:999px; overflow:hidden; margin-top:10px; }
+  .breathProgress > div{ height:100%; width:0%; background:linear-gradient(90deg, var(--accent), #9F7AEA); transition: width .4s ease; }
+
+  /* Pet meter */
+  .petMeter{ display:flex; align-items:center; gap:8px; }
+  .meterTrack{ position:relative; flex:1; height:10px; background:rgba(17,24,39,.06); border-radius:999px; overflow:hidden; }
+  .meterFill{ position:absolute; inset:0; width:0%; background:linear-gradient(90deg,#FFB6D5,#B6C7FF,#B4F0D0); transition: width .25s ease; }
+  .meterLabel{ font-size:12px; color:#6b7280; }
+
+  /* Glow Walk */
+  .glowSteps{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; margin:8px 0; }
+  @media (max-width:520px){ .glowSteps{ grid-template-columns:1fr; } }
+  .glowStep{ background:rgba(17,24,39,.03); border:1px solid rgba(17,24,39,.06); border-radius:10px; padding:10px; font-size:13px; }
+  .glowTimer{ display:flex; align-items:center; gap:10px; margin-top:8px; }
+  .glowTime{ padding:6px 10px; border-radius:999px; background:rgba(17,24,39,.06); font-weight:700; }
+  .glowProgress{ height:6px; background:rgba(17,24,39,.06); border-radius:999px; overflow:hidden; margin-top:8px; }
+  .glowProgress > div{ height:100%; width:0%; background:linear-gradient(90deg,#B3E5FF,#E7D4FF,#FFD6E7); transition: width .4s ease; }
+
+  /* Send Some Love */
+  .loveForm{ display:grid; gap:8px; grid-template-columns: 1fr; }
+  .input, .select, .textarea{
+    width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(17,24,39,.12); background:#fff; font-size:14px;
+  }
+  .textarea{ min-height:80px; resize:vertical; }
+  .muted{ color:#6b7280; font-size:12px; }
+</style>
+</head>
+<body>
+  <main class="app" aria-live="polite">
+    <header class="brand">
+      <div class="brandL">
+        <div class="logo" aria-hidden="true"><div class="heart">🤍</div></div>
+        <div class="brandText">
+          <h1>Dear Bestie</h1>
+          <p>Little love notes from your inner best friend.</p>
+        </div>
+      </div>
+      <div class="animalPicker" id="animalPicker" role="group" aria-label="Choose your buddy"></div>
+    </header>
+
+    <section class="cardWrap" id="cardWrap" role="region" aria-label="Today's affirmation">
+      <div class="controls">
+        <button class="btn" id="todayBtn" title="Show today's affirmation">Today's</button>
+        <button class="btn primary" id="elevateBtn" title="New vibe + new affirmation">Elevate</button>
+        <button class="btn" id="saveBtn" title="Save to favorites">♡ Save</button>
+        <button class="btn" id="shareBtn" title="Share affirmation">⤴ Share</button>
+        <button class="btn" id="activityBtn" title="Open activities">✨ Activities</button>
+      </div>
+
+      <div class="affirmationCard" id="affirmationCard" tabindex="0">
+        <div>
+          <div class="affirmation" id="affirmationText">Loading...</div>
+          <div class="meta" id="affirmationMeta">Tap “Today’s” or “Elevate” for a gentle reminder.</div>
+        </div>
+        <div class="animal" aria-hidden="true" id="animal"></div>
+        <canvas class="confetti" id="confettiCanvas" aria-hidden="true"></canvas>
+      </div>
+
+      <!-- Activities Tabs -->
+      <div class="activityBar">
+        <button class="btn" id="breathTab">Buddy Breaths</button>
+        <button class="btn" id="petTab">Pet Your Buddy</button>
+        <button class="btn" id="glowTab">Glow Walk (1 min)</button>
+        <button class="btn" id="loveTab">Send Some Love</button>
+      </div>
+
+      <!-- Buddy Breaths -->
+      <div class="activityCard" id="breathCard" aria-live="polite">
+        <p class="activityTitle">Buddy Breaths — 5 calm cycles</p>
+        <p class="activityHelp">Follow the prompt. Your buddy “breathes” with you. Tap Start to begin.</p>
+        <div class="breathCircleWrap">
+          <div class="breathCircle" id="breathCircle"></div>
+          <div>
+            <div class="breathText" id="breathCue">Ready?</div>
+            <div class="breathSub" id="breathSub">Inhale 4 • Hold 2 • Exhale 6</div>
+          </div>
+        </div>
+        <div class="breathProgress"><div id="breathProgress"></div></div>
+        <div style="margin-top:10px; display:flex; gap:8px;">
+          <button class="btn primary" id="breathStart">Start</button>
+          <button class="btn" id="breathStop">Stop</button>
+        </div>
+      </div>
+
+      <!-- Pet Your Buddy -->
+      <div class="activityCard" id="petCard">
+        <p class="activityTitle">Pet Your Buddy — fill the love meter</p>
+        <p class="activityHelp">Rub/tap over your animal. When the meter fills, they do a happy dance and you’ll get a special affirmation.</p>
+        <div class="petMeter">
+          <div class="meterTrack"><div class="meterFill" id="meterFill"></div></div>
+          <div class="meterLabel" id="meterLabel">0%</div>
+        </div>
+      </div>
+
+      <!-- Glow Walk -->
+      <div class="activityCard" id="glowCard">
+        <p class="activityTitle">Glow Walk — 60 seconds to reset</p>
+        <p class="activityHelp">Stand up if you can. We’ll cycle through tiny movements. Your buddy will cheer. ✨</p>
+        <div class="glowSteps" id="glowSteps"></div>
+        <div class="glowTimer">
+          <div class="glowTime" id="glowTime">60s</div>
+          <button class="btn primary" id="glowStart">Start</button>
+          <button class="btn" id="glowStop">Stop</button>
+        </div>
+        <div class="glowProgress"><div id="glowProgress"></div></div>
+      </div>
+
+      <!-- Send Some Love -->
+      <div class="activityCard" id="loveCard">
+        <p class="activityTitle">Send Some Love — text a friend a tiny boost</p>
+        <p class="activityHelp">Draft a sweet note, then copy or share. Good vibes travel fast. 💌</p>
+        <div class="loveForm">
+          <input class="input" id="loveName" placeholder="Their name (optional)"/>
+          <select class="select" id="loveTemplate">
+            <option value="thinking">Thinking of you and sending you a little sunshine ☀️</option>
+            <option value="proud">Proud of you. You’re doing better than you think. 🌸</option>
+            <option value="here">I’m here for you, always. Want a quick check-in later? 💛</option>
+            <option value="appreciate">Just wanted to say I appreciate you so much. 🫶</option>
+            <option value="custom">Custom (I’ll write my own)</option>
+          </select>
+          <textarea class="textarea" id="loveMessage" placeholder="Your message…"></textarea>
+          <div class="muted">Tip: keep it short & kind. Emojis welcome.</div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn primary" id="loveShare">Share</button>
+            <button class="btn" id="loveCopy">Copy</button>
+            <button class="btn" id="loveRandom">Inspire me</button>
+          </div>
+        </div>
+      </div>
+
+      <footer class="note">Be as good to yourself as you are to your friends. 💌</footer>
+    </section>
+
+    <aside class="sidebar" aria-label="Favorites and history">
+      <h3>Favorites</h3>
+      <div id="favList"><div class="small" style="color:#6b7280">No favorites yet — tap ♡ to save one.</div></div>
+      <div style="height:12px"></div>
+      <h3>History</h3>
+      <div class="historyGrid" id="historyGrid"><div class="small" style="color:#6b7280">No history yet.</div></div>
+      <div style="height:12px"></div>
+      <div class="small" style="color:#6b7280">Made with <span style="color:var(--accent)">❤️</span> — gentle vibes only.</div>
+    </aside>
+  </main>
+
+<script>
+/* ===================== DATA ===================== */
+const AFFIRMATIONS = [
+  "You deserve the same kindness you give your friends.",
+  "It's okay to rest — rest fuels your strength.",
+  "Your feelings are valid and worthy of attention.",
+  "Small progress is progress. Celebrate it.",
+  "You are allowed to set boundaries and say no.",
+  "You are enough in this moment, exactly as you are.",
+  "If you stumble, you are learning — that is brave.",
+  "Your needs matter. Taking care of them matters.",
+  "You bring warmth and care to others — give some to yourself.",
+  "It's okay to ask for help.",
+  "You are doing your best and that is admirable.",
+  "Your worth isn't tied to productivity.",
+  "Be curious about yourself, not critical.",
+  "You can forgive yourself and keep moving forward.",
+  "You are lovable and deserving of compassion.",
+  "Treat yourself like someone you're proud to support.",
+  "Today: one kind thing for you — that's enough.",
+  "You are resilient. You've shown up before and you will again.",
+  "You are worthy of the same patience you show others.",
+  "Breathe, soften, and take one kind step."
+];
+const SPECIAL_AFFIRMATIONS = [
+  "Your inner bestie is proud of you. Keep being soft with yourself.",
+  "You are a safe place — for your friends and for you.",
+  "Joy counts as progress. Let a little in today.",
+  "You’re allowed to glow at your own pace."
+];
+
+const ANIMALS = [
+  { id:'corgi', emoji:'🐶', name:'Corgi' },
+  { id:'bunny', emoji:'🐰', name:'Bunny' },
+  { id:'fox',   emoji:'🦊', name:'Fox' },
+  { id:'cat',   emoji:'🐱', name:'Cat' },
+  { id:'koala', emoji:'🐨', name:'Koala' },
+];
+
+const PALETTES_CALM = [
+  ['#FFEAF3','#E8F4FF','#F7F3FF'],
+  ['#FFF1F1','#EAF7F2','#F4F1FF'],
+  ['#FFF6EA','#EAF3FF','#F5EEFF'],
+  ['#F6FFF9','#F1F5FF','#FFF0F7'],
+  ['#FFF7F0','#F0F7FF','#F7F2FF'],
+];
+
+/* ===================== STATE/KEYS ===================== */
+const FAVORITES_KEY = 'dear_bestie_favs_v1';
+const HISTORY_KEY = 'dear_bestie_history_v4';
+const ANIMAL_KEY = 'dear_bestie_animal_v1';
+
+let current = { text:null, index:null };
+let currentAnimal = localStorage.getItem(ANIMAL_KEY) || 'corgi';
+
+/* ===================== HELPERS ===================== */
+function seedForDate(date = new Date()){
+  const y = date.getFullYear(), m = date.getMonth()+1, d = date.getDate();
+  return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+function deterministicIndexForDate(date = new Date(), length = AFFIRMATIONS.length){
+  const s = seedForDate(date);
+  let h=0; for(let i=0;i<s.length;i++) h=(h<<5)-h + s.charCodeAt(i);
+  return Math.abs(h) % length;
+}
+function loadFavorites(){ try{ return JSON.parse(localStorage.getItem(FAVORITES_KEY)||'[]'); }catch(e){return []} }
+function saveFavorites(arr){ localStorage.setItem(FAVORITES_KEY, JSON.stringify(arr)); }
+function loadHistory(){ try{ return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]'); }catch(e){return []} }
+function saveHistory(arr){ localStorage.setItem(HISTORY_KEY, JSON.stringify(arr)); }
+
+/* ===================== ELEMENTS ===================== */
+const affirmationText = document.getElementById('affirmationText');
+const affirmationMeta = document.getElementById('affirmationMeta');
+const todayBtn = document.getElementById('todayBtn');
+const elevateBtn = document.getElementById('elevateBtn');
+const saveBtn = document.getElementById('saveBtn');
+const shareBtn = document.getElementById('shareBtn');
+const favList = document.getElementById('favList');
+const historyGrid = document.getElementById('historyGrid');
+const affirmationCard = document.getElementById('affirmationCard');
+const cardWrap = document.getElementById('cardWrap');
+const animalSlot = document.getElementById('animal');
+const confettiCanvas = document.getElementById('confettiCanvas');
+const animalPicker = document.getElementById('animalPicker');
+
+/* Activities */
+const activityBtn = document.getElementById('activityBtn');
+const breathTab = document.getElementById('breathTab');
+const petTab = document.getElementById('petTab');
+const glowTab = document.getElementById('glowTab');
+const loveTab = document.getElementById('loveTab');
+
+const breathCard = document.getElementById('breathCard');
+const petCard = document.getElementById('petCard');
+const glowCard = document.getElementById('glowCard');
+const loveCard = document.getElementById('loveCard');
+
+/* Buddy Breaths */
+const breathStart = document.getElementById('breathStart');
+const breathStop = document.getElementById('breathStop');
+const breathCircle = document.getElementById('breathCircle');
+const breathCue = document.getElementById('breathCue');
+const breathSub = document.getElementById('breathSub');
+const breathProgress = document.getElementById('breathProgress');
+
+/* Pet */
+const meterFill = document.getElementById('meterFill');
+const meterLabel = document.getElementById('meterLabel');
+
+/* Glow Walk */
+const glowStepsEl = document.getElementById('glowSteps');
+const glowStart = document.getElementById('glowStart');
+const glowStop = document.getElementById('glowStop');
+const glowTime = document.getElementById('glowTime');
+const glowProgress = document.getElementById('glowProgress');
+
+/* Love */
+const loveName = document.getElementById('loveName');
+const loveTemplate = document.getElementById('loveTemplate');
+const loveMessage = document.getElementById('loveMessage');
+const loveShare = document.getElementById('loveShare');
+const loveCopy = document.getElementById('loveCopy');
+const loveRandom = document.getElementById('loveRandom');
+
+/* ===================== ANIMAL RENDERERS (SVG) ===================== */
+function svgCorgi(){
+  return `
+  <svg class="svgWrap" width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Corgi">
+    <rect x="22" y="46" width="76" height="44" rx="16" fill="#FFF" stroke="#F7C9D9" stroke-width="2"/>
+    <path d="M34 42 C28 28, 16 26, 22 44" fill="#FFE9F0" stroke="#F6AFC2" stroke-width="1.3"/>
+    <path d="M86 42 C92 28, 104 26, 98 44" fill="#DDEEFF" stroke="#BFDFFF" stroke-width="1.3"/>
+    <circle cx="60" cy="64" r="18" fill="#FFFDFD" stroke="#F1E8FF" stroke-width="1.5"/>
+    <circle cx="53.5" cy="62" r="2.6" fill="#111827"/>
+    <circle cx="66.5" cy="62" r="2.6" fill="#111827"/>
+    <path d="M54 71 Q60 75 66 71" stroke="#C3A6FF" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <g class="svgTail" transform="translate(88,78)">
+      <path d="M0 0 C10 -4, 18 -8, 24 -2" stroke="#FFE9F0" stroke-width="6" stroke-linecap="round" fill="none"/>
+    </g>
+  </svg>`;
+}
+function svgBunny(){
+  return `
+  <svg class="svgWrap" width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bunny">
+    <ellipse cx="60" cy="70" rx="36" ry="26" fill="#FFFFFF" stroke="#EEDCF7" stroke-width="2"/>
+    <path d="M48 30 C44 8, 58 8, 54 30" fill="#FFF" stroke="#EEDCF7" stroke-width="2"/>
+    <path d="M72 30 C68 8, 82 8, 78 30" fill="#FFF" stroke="#EEDCF7" stroke-width="2"/>
+    <circle cx="52" cy="64" r="2.6" fill="#111827"/>
+    <circle cx="68" cy="64" r="2.6" fill="#111827"/>
+    <circle cx="60" cy="70" r="2" fill="#F2A5B8"/>
+    <path d="M54 76 Q60 80 66 76" stroke="#C3A6FF" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <g class="svgTail" transform="translate(92,76)">
+      <circle r="6" fill="#F9F4FF"/>
+    </g>
+  </svg>`;
+}
+function svgFox(){
+  return `
+  <svg class="svgWrap" width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fox">
+    <path d="M30 60 Q60 36 90 60 Q84 90 60 92 Q36 90 30 60" fill="#FFD9B3" stroke="#FFC89A" stroke-width="2"/>
+    <path d="M36 50 L50 36 L46 58 Z" fill="#FFEFE0"/>
+    <path d="M84 50 L70 36 L74 58 Z" fill="#FFEFE0"/>
+    <circle cx="52" cy="64" r="2.6" fill="#111827"/>
+    <circle cx="68" cy="64" r="2.6" fill="#111827"/>
+    <path d="M54 74 Q60 78 66 74" stroke="#C3A6FF" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <g class="svgTail" transform="translate(94,80)">
+      <path d="M0 0 C10 -6, 20 -10, 26 -4" stroke="#FFD9B3" stroke-width="6" stroke-linecap="round" fill="none"/>
+    </g>
+  </svg>`;
+}
+function svgCat(){
+  return `
+  <svg class="svgWrap" width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cat">
+    <rect x="28" y="50" width="64" height="38" rx="14" fill="#FFFFFF" stroke="#DDE8FF" stroke-width="2"/>
+    <path d="M36 50 L46 38 L48 52 Z" fill="#EAF1FF" />
+    <path d="M84 50 L74 38 L72 52 Z" fill="#EAF1FF" />
+    <circle cx="54" cy="66" r="2.6" fill="#111827"/>
+    <circle cx="66" cy="66" r="2.6" fill="#111827"/>
+    <path d="M54 74 Q60 78 66 74" stroke="#C3A6FF" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <g class="svgTail" transform="translate(92,76)">
+      <path d="M0 0 C8 -2, 14 -4, 18 2" stroke="#EAF1FF" stroke-width="6" stroke-linecap="round" fill="none"/>
+    </g>
+  </svg>`;
+}
+function svgKoala(){
+  return `
+  <svg class="svgWrap" width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Koala">
+    <circle cx="60" cy="66" r="22" fill="#F6F7FB" stroke="#E6ECFF" stroke-width="2"/>
+    <circle cx="40" cy="52" r="10" fill="#F6F7FB" stroke="#E6ECFF" stroke-width="2"/>
+    <circle cx="80" cy="52" r="10" fill="#F6F7FB" stroke="#E6ECFF" stroke-width="2"/>
+    <circle cx="54" cy="66" r="2.6" fill="#111827"/>
+    <circle cx="66" cy="66" r="2.6" fill="#111827"/>
+    <ellipse cx="60" cy="72" rx="4" ry="6" fill="#333" />
+    <g class="svgTail" transform="translate(90,84)">
+      <circle r="5" fill="#EEF2FF"/>
+    </g>
+  </svg>`;
+}
+function renderAnimalSVG(id){
+  switch(id){ case 'bunny': return svgBunny(); case 'fox': return svgFox(); case 'cat': return svgCat(); case 'koala': return svgKoala(); default: return svgCorgi(); }
+}
+function renderAnimal(){ animalSlot.innerHTML = renderAnimalSVG(currentAnimal); }
+
+/* ===================== SOUND & CONFETTI ===================== */
+function playChime(){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(520, now); o.frequency.exponentialRampToValueAtTime(880, now + 0.28);
+    g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.12, now + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
+    o.connect(g); g.connect(ctx.destination); o.start(now); o.stop(now+1.0);
+  }catch(e){}
+}
+function purrBuzz(ms=1200){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)(), now=ctx.currentTime;
+    const o=ctx.createOscillator(), lfo=ctx.createOscillator(), g=ctx.createGain();
+    o.type='sawtooth'; o.frequency.value=140; lfo.frequency.value=26;
+    const lfoGain=ctx.createGain(); lfoGain.gain.value=30; lfo.connect(lfoGain).connect(o.frequency);
+    g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.08, now+.02); g.gain.exponentialRampToValueAtTime(0.0001, now+ms/1000);
+    o.connect(g).connect(ctx.destination); o.start(now); lfo.start(now); o.stop(now+ms/1000+.05);
+  }catch(e){}
+}
+function burstConfetti(){
+  const canvas = confettiCanvas, ctx = canvas.getContext('2d'), dpr = window.devicePixelRatio || 1;
+  canvas.width = cardWrap.clientWidth * dpr; canvas.height = cardWrap.clientHeight * dpr;
+  canvas.style.width = cardWrap.clientWidth + 'px'; canvas.style.height = cardWrap.clientHeight + 'px';
+  const colors = ['#FFB8D4','#FFD8A8','#CDE7FF','#F0E6FF','#FFF1F0','#EAF7F2'], pieces=[];
+  for(let i=0;i<32;i++) pieces.push({ x:Math.random()*canvas.width, y:Math.random()*-canvas.height, w:6+Math.random()*10, h:6+Math.random()*10, vx:(Math.random()-.5)*4, vy:2+Math.random()*4, color:colors[Math.floor(Math.random()*colors.length)], r:Math.random()*360 });
+  let t=0; (function anim(){ ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(const p of pieces){ p.x+=p.vx*1.6; p.y+=p.vy*1.6; p.vy+=0.08; p.r+=6; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r*Math.PI/180); ctx.fillStyle=p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore(); }
+    if(++t<90) requestAnimationFrame(anim); else ctx.clearRect(0,0,canvas.width,canvas.height);
+  })();
+}
+
+/* ===================== HISTORY / FAVORITES ===================== */
+function pushHistory(text){
+  const hist = loadHistory(); hist.unshift({ text, time:new Date().toISOString(), animal: currentAnimal });
+  saveHistory(hist.slice(0,40)); renderHistory();
+}
+function renderHistory(){
+  const hist = loadHistory(); historyGrid.innerHTML = '';
+  if(hist.length===0){ historyGrid.innerHTML = '<div class="small" style="color:#6b7280">No history yet.</div>'; return; }
+  const emoji = Object.fromEntries(ANIMALS.map(a=>[a.id,a.emoji]));
+  hist.slice(0,12).forEach(h=>{
+    const d = new Date(h.time), div = document.createElement('div'); div.className='hBlock';
+    div.innerHTML = `<div class="hIcon">${emoji[h.animal]||'💌'}</div><div><div class="hText">${h.text}</div><div class="hDate">${d.toLocaleDateString()}</div></div>`;
+    div.addEventListener('click', ()=> revealAffirmation(h.text, `From your history — ${d.toLocaleDateString()}`, false));
+    historyGrid.appendChild(div);
+  });
+}
+function renderFavorites(){
+  const arr = loadFavorites(); favList.innerHTML = '';
+  if(arr.length===0){ favList.innerHTML = '<div class="small" style="color:#6b7280">No favorites yet — tap ♡ to save one.</div>'; return; }
+  arr.forEach((t,i)=>{
+    const node = document.createElement('div'); node.className='hBlock';
+    node.innerHTML = `<div class="hIcon">💖</div><div><div class="hText">${t}</div><div class="hDate">Favorite</div></div>`;
+    node.addEventListener('click', ()=> revealAffirmation(t, 'From your favorites', false));
+    const remove=document.createElement('button'); remove.className='btn'; remove.style.marginLeft='auto'; remove.textContent='✕'; remove.title='Remove';
+    remove.addEventListener('click', (e)=>{ e.stopPropagation(); const arr2=loadFavorites(); arr2.splice(i,1); saveFavorites(arr2); renderFavorites(); });
+    node.style.gridTemplateColumns='auto 1fr auto'; node.appendChild(remove); favList.appendChild(node);
+  });
+}
+
+/* ===================== BACKGROUND PALETTE ===================== */
+function applyRandomPalette(){
+  const [a,b,c] = PALETTES_CALM[Math.floor(Math.random()*PALETTES_CALM.length)];
+  document.documentElement.style.setProperty('--g1', a); document.documentElement.style.setProperty('--g2', b); document.documentElement.style.setProperty('--g3', c);
+}
+
+/* ===================== REVEAL ===================== */
+function revealAffirmation(text, meta='', push=true){
+  affirmationText.textContent = text; affirmationMeta.textContent = meta;
+  affirmationCard.classList.remove('revealed'); void affirmationCard.offsetWidth; affirmationCard.classList.add('revealed');
+  playChime(); burstConfetti(); if(push) pushHistory(text);
+  const favs = loadFavorites(); saveBtn.textContent = favs.includes(text) ? '♥ Saved' : '♡ Save';
+}
+
+/* ===================== CONTROLS ===================== */
+todayBtn.addEventListener('click', ()=>{
+  const idx = deterministicIndexForDate(new Date(), AFFIRMATIONS.length);
+  current.index = idx; current.text = AFFIRMATIONS[idx];
+  revealAffirmation(current.text, `Today's — ${new Date().toLocaleDateString()}`);
+});
+elevateBtn.addEventListener('click', ()=>{
+  applyRandomPalette();
+  const idx = Math.floor(Math.random()*AFFIRMATIONS.length);
+  current.index = idx; current.text = AFFIRMATIONS[idx];
+  revealAffirmation(current.text, 'Elevated mood ✨');
+});
+saveBtn.addEventListener('click', ()=>{
+  if(!current.text) return; const arr = loadFavorites();
+  if(arr.includes(current.text)){ arr.splice(arr.indexOf(current.text),1); saveBtn.textContent='♡ Save'; }
+  else { arr.unshift(current.text); saveBtn.textContent='♥ Saved'; burstConfetti(); }
+  saveFavorites(arr); renderFavorites();
+});
+shareBtn.addEventListener('click', async ()=>{
+  if(!current.text) return; const shareText = `${current.text} — from Dear Bestie`;
+  if(navigator.share){ try{ await navigator.share({ text:shareText, title:'Dear Bestie Affirmation' }); }catch(e){} }
+  else{ try{ await navigator.clipboard.writeText(shareText); alert('Copied to clipboard. Share the love!'); } catch(e){ alert('Can’t auto-share. Copy this:\\n\\n'+shareText); } }
+});
+document.addEventListener('keydown', (e)=>{ if(e.code==='Space' && document.activeElement===document.body){ e.preventDefault(); elevateBtn.click(); } });
+
+/* ===================== ANIMAL PICKER ===================== */
+function renderAnimalPicker(){
+  animalPicker.innerHTML=''; ANIMALS.forEach(a=>{
+    const btn = document.createElement('button');
+    btn.className='animalBtn'+(a.id===currentAnimal?' active':''); btn.setAttribute('aria-label', a.name); btn.title=a.name; btn.textContent=a.emoji;
+    btn.addEventListener('click', ()=>{ currentAnimal=a.id; localStorage.setItem(ANIMAL_KEY,currentAnimal);
+      [...animalPicker.children].forEach(el=>el.classList.remove('active')); btn.classList.add('active'); renderAnimal();
+      affirmationCard.classList.remove('revealed'); void affirmationCard.offsetWidth; affirmationCard.classList.add('revealed'); playChime(); });
+    animalPicker.appendChild(btn);
+  });
+}
+
+/* ===================== ACTIVITIES ===================== */
+let activeActivity = null;
+function hideAllActivities(){ breathCard.classList.remove('active'); petCard.classList.remove('active'); glowCard.classList.remove('active'); loveCard.classList.remove('active'); }
+function showBreaths(){ hideAllActivities(); breathCard.classList.add('active'); activeActivity='breath'; }
+function showPet(){ hideAllActivities(); petCard.classList.add('active'); activeActivity='pet'; }
+function showGlow(){ hideAllActivities(); glowCard.classList.add('active'); activeActivity='glow'; }
+function showLove(){ hideAllActivities(); loveCard.classList.add('active'); activeActivity='love'; }
+
+activityBtn.addEventListener('click', ()=>{ if(activeActivity){ hideAllActivities(); activeActivity=null; } else { showBreaths(); } });
+breathTab.addEventListener('click', showBreaths);
+petTab.addEventListener('click', showPet);
+glowTab.addEventListener('click', showGlow);
+loveTab.addEventListener('click', showLove);
+
+/* Buddy Breaths */
+let breathTimer=null, breathStep=0, breathCycle=0;
+function setCue(text, sub){ breathCue.textContent=text; if(sub!==undefined) breathSub.textContent=sub; }
+function stopBreath(){
+  if(breathTimer){ clearTimeout(breathTimer); breathTimer=null; }
+  breathStep=0; breathCycle=0; setCue('Ready?','Inhale 4 • Hold 2 • Exhale 6');
+  breathCircle.style.transform='scale(1)'; breathProgress.style.width='0%';
+}
+function stepBreath(){
+  if(breathStep===0){ setCue('Inhale','fill up softly'); breathCircle.style.transform='scale(1.18)'; playChime(); breathTimer=setTimeout(()=>{ breathStep=1; stepBreath(); }, 4000); }
+  else if(breathStep===1){ setCue('Hold','stay gentle'); breathTimer=setTimeout(()=>{ breathStep=2; stepBreath(); }, 2000); }
+  else if(breathStep===2){
+    setCue('Exhale','slow and long'); breathCircle.style.transform='scale(0.92)';
+    breathTimer=setTimeout(()=>{
+      breathCycle++; const pct=Math.min(100,(breathCycle/5)*100); breathProgress.style.width=pct+'%';
+      if(breathCycle>=5){ setCue('Well done ✨','notice the softness'); burstConfetti(); revealAffirmation(randomSpecial(),'A little reward from your buddy 💞'); stopBreath(); }
+      else { breathStep=0; stepBreath(); }
+    }, 6000);
+  }
+}
+breathStart.addEventListener('click', ()=>{ stopBreath(); breathStep=0; breathCycle=0; stepBreath(); });
+breathStop.addEventListener('click', stopBreath);
+
+/* Pet Your Buddy */
+let petProgress=0, petCooldown=false;
+function updateMeter(delta){
+  petProgress = Math.max(0, Math.min(100, petProgress + delta));
+  meterFill.style.width = petProgress + '%'; meterLabel.textContent = Math.round(petProgress)+'%';
+  if(petProgress>=100){ petProgress=0; meterFill.style.width='0%'; meterLabel.textContent='0%';
+    purrBuzz(1300); burstConfetti(); revealAffirmation(randomSpecial(), 'Your buddy is thrilled 💕'); }
+}
+function petBoost(){ if(petCooldown) return; petCooldown=true; updateMeter(9+Math.random()*8); setTimeout(()=>petCooldown=false, 80); }
+animalSlot.addEventListener('pointerdown', petBoost);
+animalSlot.addEventListener('pointermove', (e)=>{ if(e.buttons===1) petBoost(); });
+animalSlot.addEventListener('touchmove', petBoost, {passive:true});
+animalSlot.addEventListener('click', petBoost);
+
+/* Glow Walk */
+const GLOW_SEQUENCE = [
+  {label:"Neck roll — slow circles", seconds:10},
+  {label:"Shoulder roll — melt tension", seconds:10},
+  {label:"Reach up — long spine", seconds:10},
+  {label:"Side stretch — left & right", seconds:10},
+  {label:"Open chest — hands behind back", seconds:10},
+  {label:"Shake it out — arms & hands", seconds:10},
+];
+function renderGlowSteps(){
+  glowStepsEl.innerHTML='';
+  GLOW_SEQUENCE.forEach((s, i)=>{
+    const div=document.createElement('div'); div.className='glowStep'; div.id='glowStep'+i; div.textContent = s.label + ' · '+ s.seconds + 's';
+    glowStepsEl.appendChild(div);
+  });
+}
+let glowTimer=null, glowRemaining=60, glowIndex=0, glowElapsed=0;
+function resetGlow(){
+  if(glowTimer){ clearTimeout(glowTimer); glowTimer=null; }
+  glowRemaining=GLOW_SEQUENCE.reduce((a,b)=>a+b.seconds,0); glowIndex=0; glowElapsed=0;
+  glowTime.textContent = glowRemaining+'s'; glowProgress.style.width='0%';
+  [...glowStepsEl.children].forEach(el=> el.style.boxShadow='none');
+}
+function stepGlow(){
+  if(glowIndex>=GLOW_SEQUENCE.length){ burstConfetti(); revealAffirmation(randomSpecial(),'Glow complete 🌤️'); resetGlow(); return; }
+  const curr = GLOW_SEQUENCE[glowIndex];
+  const stepEl = document.getElementById('glowStep'+glowIndex);
+  stepEl.style.boxShadow='0 0 0 2px rgba(17,24,39,.12) inset, 0 8px 16px rgba(17,24,39,.06)';
+  const stepStartElapsed = glowElapsed;
+  function tick(sec){
+    glowRemaining--; glowElapsed++;
+    glowTime.textContent = glowRemaining+'s';
+    const pct = Math.min(100, (glowElapsed / (GLOW_SEQUENCE.reduce((a,b)=>a+b.seconds,0))) * 100);
+    glowProgress.style.width = pct + '%';
+    if(sec < curr.seconds-1){
+      glowTimer = setTimeout(()=>tick(sec+1), 1000);
+    } else {
+      stepEl.style.boxShadow='none';
+      glowIndex++;
+      stepGlow();
+    }
+  }
+  tick(0);
+}
+glowStart.addEventListener('click', ()=>{ resetGlow(); stepGlow(); playChime(); });
+glowStop.addEventListener('click', resetGlow);
+
+/* Send Some Love */
+const LOVE_TEMPLATES = {
+  thinking: (n)=>`Thinking of you${n?`, ${n}`:''} and sending you a little sunshine ☀️`,
+  proud: (n)=>`Proud of you${n?`, ${n}`:''}. You’re doing better than you think. 🌸`,
+  here: (n)=>`${n||'Hey love'}, I’m here for you, always. Want a quick check-in later? 💛`,
+  appreciate: (n)=>`Just wanted to say I appreciate you so much${n?`, ${n}`:''}. 🫶`,
+};
+function refreshLove(){
+  const n = loveName.value.trim();
+  if(loveTemplate.value==='custom'){ return; }
+  const tpl = LOVE_TEMPLATES[loveTemplate.value] || LOVE_TEMPLATES.thinking;
+  loveMessage.value = tpl(n);
+}
+loveTemplate.addEventListener('change', refreshLove);
+loveName.addEventListener('input', refreshLove);
+loveRandom.addEventListener('click', ()=>{
+  const keys = Object.keys(LOVE_TEMPLATES);
+  const k = keys[Math.floor(Math.random()*keys.length)];
+  loveTemplate.value = k; refreshLove(); playChime();
+});
+loveCopy.addEventListener('click', async ()=>{
+  try{ await navigator.clipboard.writeText(loveMessage.value.trim() || LOVE_TEMPLATES.thinking(loveName.value.trim())); burstConfetti(); alert('Copied — go text your friend!'); } catch(e){ alert('Copy failed — you can select and copy manually.'); }
+});
+loveShare.addEventListener('click', async ()=>{
+  const text = loveMessage.value.trim() || LOVE_TEMPLATES.thinking(loveName.value.trim());
+  if(navigator.share){
+    try{ await navigator.share({ text, title:'💌 From Dear Bestie' }); burstConfetti(); } catch(e){}
+  } else {
+    try{ await navigator.clipboard.writeText(text); alert('Sharing not supported here, but I copied it for you!'); } catch(e){ alert('Sharing not supported and copy failed — try copy button.'); }
+  }
+});
+
+/* Utility */
+function randomSpecial(){ return SPECIAL_AFFIRMATIONS[Math.floor(Math.random()*SPECIAL_AFFIRMATIONS.length)]; }
+
+/* ===================== INIT ===================== */
+function init(){
+  renderAnimalPicker(); renderAnimal(); renderFavorites(); renderHistory();
+  renderGlowSteps(); resetGlow(); refreshLove();
+  const idx = deterministicIndexForDate(new Date(), AFFIRMATIONS.length);
+  current.index = idx; current.text = AFFIRMATIONS[idx];
+  setTimeout(()=> revealAffirmation(current.text, `Today's — ${new Date().toLocaleDateString()}`), 250);
+  window.addEventListener('resize', ()=>{
+    confettiCanvas.width = cardWrap.clientWidth * (window.devicePixelRatio||1);
+    confettiCanvas.height = cardWrap.clientHeight * (window.devicePixelRatio||1);
+  });
+}
+init();
+</script>
+</body>
+</html>
